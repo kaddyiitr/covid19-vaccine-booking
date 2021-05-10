@@ -21,7 +21,7 @@ python covid-appointments.py -h
 
 Apart from these inputs, ther script requires two more inputs. The Authentication token and the comma separated list of beneficiaries.
 
-### Authentication Token
+#### How to get the Authentication Token
 
 To get the authentication token, follow these steps
 
@@ -32,7 +32,7 @@ To get the authentication token, follow these steps
 - From the Request Headers copy the authorisation header without Bearer. It starts with **ey**
 - Refer to this link if you are still confused
 
-### Beneficiaries
+#### How to get Beneficiaries
 
 After successful login into the covid portal, you shall see the list of all the added members. Copy the REF ID (a 13 digit id displayed right next to the name) into a comma selarated list (without any spaces) and press enter.
 
