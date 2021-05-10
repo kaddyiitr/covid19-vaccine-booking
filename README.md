@@ -25,7 +25,7 @@ Apart from these inputs, ther script requires two more inputs. The Authenticatio
 
 To get the authentication token, follow these steps
 
-- Open https://selfregistration.cowin.gov.in/ in chrome 
+- Open https://selfregistration.cowin.gov.in/ in Chrome Browser.
 - Right Click on the page and click Inspect to open the Chrome DevTools. 
 - Go to the Network tab and within that, open the XHR tab
 - After successful OTP authentication, look for the beneficiaries API call
