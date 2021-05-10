@@ -19,7 +19,7 @@ To know about all the command line parameters supported by the script, use the f
 python3 covid-appointments.py -h
 ```
 
-Apart from these inputs, ther script requires two more inputs. The Authentication token and the comma separated list of beneficiaries.
+Apart from the command line inputs provided to the script at the time of starting the script, two more inputs are required - **Authentication token** and **Beneficiaries**. The script will ask for these inputs after you run it and will not proceed further until you provide these inputs.
 
 #### How to get the Authentication Token
 
