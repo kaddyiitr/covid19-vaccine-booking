@@ -16,7 +16,7 @@ pip3 install -r requirements.txt
 To know about all the command line parameters supported by the script, use the following command
 
 ```
-python covid-appointments.py -h
+python3 covid-appointments.py -h
 ```
 
 Apart from these inputs, ther script requires two more inputs. The Authentication token and the comma separated list of beneficiaries.
