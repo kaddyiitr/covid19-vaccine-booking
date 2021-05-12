@@ -16,23 +16,23 @@ pip3 install -r requirements.txt
 To know about all the command line parameters supported by the script, use the following command
 
 ```
-python covid-appointments.py -h
+python3 covid-appointments.py -h
 ```
 
-Apart from these inputs, ther script requires two more inputs. The Authentication token and the comma separated list of beneficiaries.
+Apart from the command line inputs provided to the script at the time of starting the script, two more inputs are required - **Authentication token** and **Beneficiaries**. The script will ask for these inputs after you run it and will not proceed further until you provide these inputs.
 
-### Authentication Token
+#### How to get the Authentication Token
 
 To get the authentication token, follow these steps
 
-- Open https://selfregistration.cowin.gov.in/ in chrome 
+- Open https://selfregistration.cowin.gov.in/ in Chrome Browser.
 - Right Click on the page and click Inspect to open the Chrome DevTools. 
 - Go to the Network tab and within that, open the XHR tab
 - After successful OTP authentication, look for the beneficiaries API call
 - From the Request Headers copy the authorisation header without Bearer. It starts with **ey**
 - Refer to this link if you are still confused
 
-### Beneficiaries
+#### How to get Beneficiaries
 
 After successful login into the covid portal, you shall see the list of all the added members. Copy the REF ID (a 13 digit id displayed right next to the name) into a comma selarated list (without any spaces) and press enter.
 
