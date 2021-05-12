@@ -57,7 +57,7 @@ python covid-appointments.py --dose 2 --age 45 --type COVIDSHIELD --district 264
 ```
 ### How to get district_id
 
-Please refer to the districts.csv sheet. It contains the list of all district_ids in the country
+Please refer to the [districts.csv](https://github.com/kaddyiitr/covid19-vaccine-booking/blob/master/districts.csv) sheet. It contains the list of all district_ids in the country
 
 
 ## Limitations
