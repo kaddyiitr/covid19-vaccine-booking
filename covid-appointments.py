@@ -367,5 +367,48 @@ def main():
             print("[%s] No Appointments, attempt %s " % (datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), str(i)), RED)
         time.sleep(SLEEP)
 
+def get_district_ids():
+    token = get_token()
+
+    url = "https://cdn-api.co-vin.in/api/v2/admin/location/states"
+    headers = get_headers(token)
+
+    r=requests.get(url, headers=headers)
+    success = (r.status_code == 200)
+    pprint.pprint(headers)
+
+    if not success:
+        cprint("failed to get list of states. Error Code: {0}, Error Message: {1}".format(str(r.status_code),r.text),CYAN)
+        return
+
+    states = r.json()['states']
+
+    f = open('districts.csv','w')
+    f.write('district_id, district name, state\n')
+
+    for state in states:
+        state_id = state['state_id']
+        state_name = state['state_name']
+
+        district_url = "https://cdn-api.co-vin.in/api/v2/admin/location/districts/" + str(state_id)
+        headers = get_headers(token)
+        pprint.pprint(headers)
+        req = requests.get(district_url, headers=headers)
+
+        success = (req.status_code == 200)
+
+        if success:
+            districts = req.json()['districts']
+            for district in districts:
+                f.write(str(district['district_id']) + ',' + district['district_name'] + ',' + state_name +'\n')
+        else:
+            cprint("failed to get district data for state_id {0} and state_name {1}".format(str(state_id), state_name), CYAN)
+
+    f.close()
+
+
+
+
+
 if __name__ == "__main__":
     main()
