@@ -13,7 +13,7 @@ pip3 install -r requirements.txt
 
 ## Usage
 
-The first step before running this script is to add all the people you want to book appoints for, into one single account. This way, you can book all of them in one single appointment itself.  
+**The first step before running this script is to add all the people you want to book appointments for, into one single account.** This way, you can book all of them in one single appointment itself.  
 
 To know about all the command line parameters supported by the script, use the following command
 
