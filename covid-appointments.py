@@ -23,7 +23,7 @@ BOLD    = "\033[;1m"
 REVERSE = "\033[;7m"
 TOKEN_FILE = "token.txt"
 
-SLEEP = 3
+SLEEP = 4
 AGE = 18
 DISTRICT = 294
 DOSE = 1
@@ -79,24 +79,34 @@ def get_token():
 '''
 
 
-def fetch_sessions_of_interest(token, min_age_limit=18, district_id=294,date=None, vaccine_type = None):
+def fetch_sessions_of_interest(token, min_age_limit=18, district_id=294,date=None, vaccine_type = None, preferred_pins = [], restrict_pin = False):
     url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByDistrict?district_id={district_id}&date={date}".format(date=date,district_id=district_id)
     headers = get_headers(token)
     r=requests.get(url,headers=headers)
     centers = r.json()['centers']
+    print ("found " + str(len(centers)) + " centers for district " + str(district_id))
     useful_sessions = []
+    preferred_sessions = []
     for center in centers:
         row = {"center_id" : center['center_id'], 'pincode' : center['pincode'], 'name': center['name']}
         for session in center['sessions']:
-
+            #print("processing session " + str(session))
             if vaccine_type and vaccine_type != session['vaccine']:
                 continue
 
             if (session['available_capacity'] > 0 and session['min_age_limit'] == min_age_limit):
                 myrow = row.copy()
                 myrow.update(session)
-                useful_sessions.append(myrow)
-    return useful_sessions
+                #print("myrow " + str(myrow))
+                if int(center['pincode']) in preferred_pins:
+                    preferred_sessions.append(myrow)
+                else:
+                    if not restrict_pin:
+                        useful_sessions.append(myrow)
+
+    preferred_sessions.sort(key = lambda x:x['date'])
+    useful_sessions.sort(key = lambda x:x['date'])
+    return preferred_sessions + useful_sessions
 
 def get_beneficiaries(token):
     url = "https://cdn-api.co-vin.in/api/v2/appointment/beneficiaries"
@@ -202,7 +212,7 @@ def book_appointments_for_session(token, session, beneficiary_ids, dose):
     else:
         slot = slots[0]
 
-    #Call getCatcha 
+    #Call getCatcha
     captchaResp = readCaptcha(token)
 
     if not captchaResp:
@@ -223,14 +233,36 @@ def book_appointments_for_session(token, session, beneficiary_ids, dose):
         cprint("failed to book appointment at {0}. Error: {1}".format(session['name'],r.text),CYAN)
     return success
 
-def attempt_appointments(token,useful_sessions,beneficiary_ids, dose):
+
+def cancelAppointment(token, beneficiary_ids, reschedule_id):
+    data = {"beneficiariesToCancel": beneficiary_ids, "appointment_id": reschedule_id}
+    url = "https://cdn-api.co-vin.in/api/v2/appointment/cancel"
+    headers = get_headers(token)
+    pprint.pprint(data)
+    pprint.pprint(headers)
+    r=requests.post(url, json=data, headers=headers)
+    success = (r.status_code == 200) or (r.status_code == 204)
+    if success:
+        cprint("Old Appointment with id {0} cancelled successfully".format(reschedule_id), GREEN)
+    else:
+        cprint("failed to cancel prior appointment with id {0}. Error Code: {1}, Error Message: {2}".format(reschedule_id,str(r.status_code),r.text),CYAN)
+
+    return success
+
+def attempt_appointments(token,useful_sessions,beneficiary_ids, dose, reschedule_id):
     beneficiaries = get_beneficiaries(token)
 
-    if are_all_appointments_booked(beneficiaries,beneficiary_ids, dose):
+    if len(reschedule_id) == 0 and are_all_appointments_booked(beneficiaries,beneficiary_ids, dose):
         cprint("APPOINTMENT ALREADY BOOKED!!", GREEN)
         return True
 
+    if len(reschedule_id) > 0:
+        #cancel previous booking
+        cancelAppointment(token, beneficiary_ids, reschedule_id)
+
+
     for session in useful_sessions:
+
         ret = book_appointments_for_session(token, session, beneficiary_ids, dose)
         if ret == True:
             beneficiaries = get_beneficiaries(token)
@@ -256,12 +288,15 @@ def main():
     parser.add_argument("-b", "--dose", help = "For first dose, pass 1; for second dose pass 2. Default value 1")
     parser.add_argument("-t", "--type", help = "COVAXIN or COVIDSHIELD")
     parser.add_argument("-l", "--district", help = "district id. Default value 294, for Bangalore")
+    parser.add_argument("-r", "--reschedule", help = "If you want to reschedule appointment, pass the old appointment id")
+    parser.add_argument("-p", "--pin", help = "Preferred pin codes in a comma separated list. If slots from these pincodes are available, they shall be booked first. For eg - 560001,560002,560034,560076")
+    parser.add_argument("-rp", "--restrictpin", help = "If yes, appointments will only be booked in pincodes provided in --pin parameter. It will not book outside these pins")
 
 
     # Read arguments from command line
     args = parser.parse_args()
 
-    age = AGE 
+    age = AGE
     if args.age:
         age = int(args.age)
 
@@ -285,28 +320,43 @@ def main():
         else:
             vaccine_type = 'COVIDSHIELD'
 
+    reschedule_id = ''
 
+    if args.reschedule:
+        reschedule_id = args.reschedule
 
-    cprint("Searching Appointment for date " + date_str + " age " + str(age) + " dose " + str(dose) + " district " + str(district),CYAN)
+    preferred_pins = []
+
+    if args.pin:
+        pins = args.pin
+        pins = pins.split(",")
+        preferred_pins = [int(i.strip()) for i in pins]
+
+    restrict_pin = False
+
+    if args.restrictpin:
+        restrict_pin = True
+
+    cprint("Searching Appointment for date " + date_str + " age " + str(age) + " dose " + str(dose) + " district " + str(district) + " reschedule " + reschedule_id + " pins " + str(preferred_pins),CYAN)
 
     token = get_token()
 
 
-    useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type)
+    useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type, preferred_pins, restrict_pin)
     pprint.pprint(useful_sessions)
     beneficiary_ids = get_beneficary_ids()
     i=0
     while True:
         i+=1
         try:
-            useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type)
+            useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type, preferred_pins, restrict_pin)
         except:
             traceback.print_exc()
             continue
 
         if len(useful_sessions) > 0:
-
-            success = attempt_appointments(token,useful_sessions, beneficiary_ids, dose)
+            pprint.pprint(useful_sessions)
+            success = attempt_appointments(token,useful_sessions, beneficiary_ids, dose, reschedule_id)
             if success:
                 beneficiaries = get_beneficiaries(token)
                 pprint.pprint(beneficiaries)
