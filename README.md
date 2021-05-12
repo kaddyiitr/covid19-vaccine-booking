@@ -55,7 +55,7 @@ python covid-appointments.py --age 45 --district 264 --pin 560102,560034
 ```
 python covid-appointments.py --dose 2 --age 45 --type COVIDSHIELD --district 264 --pin 560102,560034 --restrictpin yes
 ```
-### How to get district_id
+### How to get district Id
 
 Please refer to the [districts.csv](https://github.com/kaddyiitr/covid19-vaccine-booking/blob/master/districts.csv) sheet. It contains the list of all district_ids in the country
 
