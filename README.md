@@ -13,6 +13,8 @@ pip3 install -r requirements.txt
 
 ## Usage
 
+The first step before running this script is to add all the people you want to book appoints for, into one single account. This way, you can book all of them in one single appointment itself.  
+
 To know about all the command line parameters supported by the script, use the following command
 
 ```
@@ -36,6 +38,23 @@ To get the authentication token, follow these steps
 
 After successful login into the covid portal, you shall see the list of all the added members. Copy the REF ID (a 13 digit id displayed right next to the name) into a comma selarated list (without any spaces) and press enter.
 
+
+## Examples
+
+1. For booking first Dose in 18-44 age category for Belagum for today
+```
+python covid-appointments.py --district 264
+```
+
+2. For booking first Dose in 45+ age category for Bangalore on 17th May'21 preferring nearby hospitals first, say pincodes 560102 and 560034
+```
+python covid-appointments.py --age 45 --district 264 --pin 560102,560034
+```
+
+3. For booking second Dose of COVIDSHIELD in 45+ age category for Bangalore on 17th May'21 restricting bookings to hospitals in the pincodes 560102 and 560034. With this command, any hospital providing COVAXIN will be ignored.
+```
+python covid-appointments.py --dose 2 --age 45 --type COVIDSHIELD --district 264 --pin 560102,560034 --restrictpin yes
+```
 
 ## Limitations
 
