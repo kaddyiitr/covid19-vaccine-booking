@@ -48,12 +48,12 @@ python covid-appointments.py --district 264
 
 2. For booking first Dose in 45+ age category for Bangalore on 17th May'21 preferring nearby hospitals first, say pincodes 560102 and 560034
 ```
-python covid-appointments.py --age 45 --district 264 --pin 560102,560034
+python covid-appointments.py --age 45 --district 294 --pin 560102,560034
 ```
 
 3. For booking second Dose of COVIDSHIELD in 45+ age category for Bangalore on 17th May'21 restricting bookings to hospitals in the pincodes 560102 and 560034. With this command, any hospital providing COVAXIN will be ignored.
 ```
-python covid-appointments.py --dose 2 --age 45 --type COVIDSHIELD --district 264 --pin 560102,560034 --restrictpin yes
+python covid-appointments.py --dose 2 --age 45 --type COVIDSHIELD --district 294 --pin 560102,560034 --restrictpin yes
 ```
 ### How to get district Id
 
