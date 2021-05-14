@@ -32,7 +32,7 @@ To get the authentication token, follow these steps
 - Go to the Network tab and within that, open the XHR tab
 - After successful OTP authentication, look for the beneficiaries API call
 - From the Request Headers copy the authorisation header without Bearer. It starts with **ey**
-- Refer to this [screenshot](https://raw.githubusercontent.com/kaddyiitr/covid19-vaccine-booking/master/help-screenshot.png) if you are still confused
+- If you are still confused, refer to this [screenshot](https://raw.githubusercontent.com/kaddyiitr/covid19-vaccine-booking/master/help-screenshot.png) and pay attention to the parts circled in red color.
 
 #### How to get Beneficiaries
 
