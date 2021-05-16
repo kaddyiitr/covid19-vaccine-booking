@@ -37,7 +37,7 @@ To get the authentication token, follow these steps
 
 ## Examples
 
-1. For booking first Dose in 18-44 age category for Belagum for today
+1. For booking first Dose in 18-44 age category for 1 person (with REF ID 2371875657319) in Belagum for today
 ```
 python3 covid-appointments.py --district 264 --beneficiaries 2371875657319
 ```
