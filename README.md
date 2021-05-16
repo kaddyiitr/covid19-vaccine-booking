@@ -34,27 +34,28 @@ To get the authentication token, follow these steps
 - From the Request Headers copy the authorisation header without Bearer. It starts with **ey**
 - If you are still confused, refer to this [screenshot](https://raw.githubusercontent.com/kaddyiitr/covid19-vaccine-booking/master/help-screenshot.png) and pay attention to the parts circled in red color.
 
-#### How to get Beneficiaries
-
-After successful login into the covid portal, you shall see the list of all the added members. Copy the REF ID (a 13 digit id displayed right next to the name) into a comma selarated list (without any spaces) and press enter.
-
 
 ## Examples
 
 1. For booking first Dose in 18-44 age category for Belagum for today
 ```
-python3 covid-appointments.py --district 264
+python3 covid-appointments.py --district 264 --beneficiaries 2371875657319
 ```
 
-2. For booking first Dose in 45+ age category for Bangalore on 17th May'21 preferring nearby hospitals first, say pincodes 560102 and 560034
+2. For booking first Dose in 45+ age category for two people in Bangalore on 17th May'21 preferring nearby hospitals first, say pincodes 560102 and 560034
 ```
-python3 covid-appointments.py --age 45 --district 294 --pin 560102,560034
+python3 covid-appointments.py --age 45 --district 294 --beneficiaries 2371875657319,7265471323123 --pin 560102,560034
 ```
 
 3. For booking second Dose of COVIDSHIELD in 45+ age category for Bangalore on 17th May'21 restricting bookings to hospitals in the pincodes 560102 and 560034. With this command, any hospital providing COVAXIN will be ignored.
 ```
-python3 covid-appointments.py --dose 2 --age 45 --type COVIDSHIELD --district 294 --pin 560102,560034 --restrictpin yes
+python3 covid-appointments.py --dose 2 --age 45 --beneficiaries 2371875657319 --type COVIDSHIELD --district 294 --pin 560102,560034 --restrictpin yes
 ```
+
+### How to get Beneficiaries
+
+After successful login into the covid portal, you shall see the list of all the added members. Copy the REF ID (a 13 digit id displayed right next to the name) into a comma selarated list (without any spaces) and pass it in the --beneficiaries parameter
+
 ### How to get district Id
 
 Please refer to the [districts.csv](https://github.com/kaddyiitr/covid19-vaccine-booking/blob/master/districts.csv) sheet. It contains the list of all district_ids in the country
