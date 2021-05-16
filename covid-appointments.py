@@ -79,7 +79,7 @@ def get_token():
 '''
 
 
-def fetch_sessions_of_interest(token, min_age_limit=18, district_id=294,date=None, vaccine_type = None, preferred_pins = [], restrict_pin = False):
+def fetch_sessions_of_interest(token, min_age_limit=18, district_id=294,date=None, vaccine_type = None, preferred_pins = [], restrict_pin = False, dose = 1):
     url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByDistrict?district_id={district_id}&date={date}".format(date=date,district_id=district_id)
     headers = get_headers(token)
     r=requests.get(url,headers=headers)
@@ -94,7 +94,9 @@ def fetch_sessions_of_interest(token, min_age_limit=18, district_id=294,date=Non
             if vaccine_type and vaccine_type != session['vaccine']:
                 continue
 
-            if (session['available_capacity'] > 0 and session['min_age_limit'] == min_age_limit):
+            if (session['available_capacity'] > 0 and session['min_age_limit'] == min_age_limit and
+                ((dose == 1 and session['available_capacity_dose1'] > 0) or (dose == 2 and session['available_capacity_dose2'] > 0))
+                ):
                 myrow = row.copy()
                 myrow.update(session)
                 #print("myrow " + str(myrow))
@@ -106,7 +108,13 @@ def fetch_sessions_of_interest(token, min_age_limit=18, district_id=294,date=Non
 
     preferred_sessions.sort(key = lambda x:x['date'])
     useful_sessions.sort(key = lambda x:x['date'])
-    return preferred_sessions + useful_sessions
+    final_session = preferred_sessions + useful_sessions
+
+    print("found " + str(len(final_session)) + " bookable slot/date combo")
+
+    for session in final_session:
+        print(" date " + session['date'] + ", center " + session['name'] + ", total " + str(session['available_capacity']) + ", dose1 " + str(session['available_capacity_dose1']) + ", dose2 " + str(session['available_capacity_dose2']) + ", vaccine " + session['vaccine'])
+    return final_session
 
 def get_beneficiaries(token):
     url = "https://cdn-api.co-vin.in/api/v2/appointment/beneficiaries"
@@ -284,8 +292,9 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--date", help = "Date for search DD-MM-YYYY format. Default value Today")
+    parser.add_argument("-b", "--beneficiaries", help = "A comma separated list of REF IDs all beneficiaries")
     parser.add_argument("-a", "--age", help = "Age for 18-45, pass 18; 45-60, pass 45. Default value 18")
-    parser.add_argument("-b", "--dose", help = "For first dose, pass 1; for second dose pass 2. Default value 1")
+    parser.add_argument("-do", "--dose", help = "For first dose, pass 1; for second dose pass 2. Default value 1")
     parser.add_argument("-t", "--type", help = "COVAXIN or COVIDSHIELD")
     parser.add_argument("-l", "--district", help = "district id. Default value 294, for Bangalore")
     parser.add_argument("-r", "--reschedule", help = "If you want to reschedule appointment, pass the old appointment id")
@@ -337,25 +346,34 @@ def main():
     if args.restrictpin:
         restrict_pin = True
 
-    cprint("Searching Appointment for date " + date_str + " age " + str(age) + " dose " + str(dose) + " district " + str(district) + " reschedule " + reschedule_id + " pins " + str(preferred_pins),CYAN)
+    beneficiary_ids = []
+
+    if args.beneficiaries:
+        t = args.beneficiaries
+        t = t.split(",")
+        beneficiary_ids = [i.strip() for i in t]
+    else:
+        cprint("Please enter the comma separated list of all the beneficiary ids",RED)
+        return
+
+
+    cprint("Searching Appointment for date " + date_str + " beneficiaries " + str(beneficiary_ids) + " age " + str(age) + " dose " + str(dose) + " district " + str(district) + " reschedule " + reschedule_id + " pins " + str(preferred_pins) + " restrict_pin " + str(restrict_pin),CYAN)
 
     token = get_token()
 
-
-    useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type, preferred_pins, restrict_pin)
-    pprint.pprint(useful_sessions)
-    beneficiary_ids = get_beneficary_ids()
+    useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type, preferred_pins, restrict_pin, dose)
+    #pprint.pprint(useful_sessions)
     i=0
     while True:
         i+=1
         try:
-            useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type, preferred_pins, restrict_pin)
+            useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type, preferred_pins, restrict_pin, dose)
         except:
             traceback.print_exc()
             continue
 
         if len(useful_sessions) > 0:
-            pprint.pprint(useful_sessions)
+            #pprint.pprint(useful_sessions)
             success = attempt_appointments(token,useful_sessions, beneficiary_ids, dose, reschedule_id)
             if success:
                 beneficiaries = get_beneficiaries(token)
