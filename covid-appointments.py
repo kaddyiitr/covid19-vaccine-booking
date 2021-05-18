@@ -79,7 +79,7 @@ def get_token():
 '''
 
 
-def fetch_sessions_of_interest(token, min_age_limit=18, district_id=294,date=None, vaccine_type = None, preferred_pins = [], restrict_pin = False, dose = 1):
+def fetch_sessions_of_interest(token, min_age_limit=18, district_id=294,date=None, vaccine_type = None, preferred_pins = [], restrict_pin = False, dose = 1, beneficiary_ids = []):
     url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByDistrict?district_id={district_id}&date={date}".format(date=date,district_id=district_id)
     headers = get_headers(token)
     r=requests.get(url,headers=headers)
@@ -97,6 +97,12 @@ def fetch_sessions_of_interest(token, min_age_limit=18, district_id=294,date=Non
             if (session['available_capacity'] > 0 and session['min_age_limit'] == min_age_limit and
                 ((dose == 1 and session['available_capacity_dose1'] > 0) or (dose == 2 and session['available_capacity_dose2'] > 0))
                 ):
+
+                if len(beneficiary_ids) > session['available_capacity'] or session['available_capacity'] < 2:
+                    cprint("[TOO FEW SEATS, IGNORE] " + " date " + session['date'] + ", center " + row['name'] + ", total " + str(session['available_capacity']) + ", dose1 " + str(session['available_capacity_dose1']) + ", dose2 " + str(session['available_capacity_dose2']) + ", vaccine " + session['vaccine'],CYAN)
+                    continue
+
+
                 myrow = row.copy()
                 myrow.update(session)
                 #print("myrow " + str(myrow))
@@ -360,13 +366,13 @@ def main():
 
     token = get_token()
 
-    useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type, preferred_pins, restrict_pin, dose)
+    useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type, preferred_pins, restrict_pin, dose, beneficiary_ids)
     #pprint.pprint(useful_sessions)
     i=0
     while True:
         i+=1
         try:
-            useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type, preferred_pins, restrict_pin, dose)
+            useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type, preferred_pins, restrict_pin, dose, beneficiary_ids)
         except:
             traceback.print_exc()
             continue
