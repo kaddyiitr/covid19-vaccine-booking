@@ -91,7 +91,7 @@ def fetch_sessions_of_interest(token, min_age_limit=18, district_id=294,date=Non
         row = {"center_id" : center['center_id'], 'pincode' : center['pincode'], 'name': center['name']}
         for session in center['sessions']:
             #print("processing session " + str(session))
-            if vaccine_type and vaccine_type != session['vaccine']:
+            if len(vaccine_type) > 0 and session['vaccine'] not in vaccine_type:
                 continue
 
             if (session['available_capacity'] > 0 and session['min_age_limit'] == min_age_limit and
@@ -322,12 +322,11 @@ def main():
     if args.date:
         date_str = args.date
 
-    vaccine_type = None
+    vaccine_type = []
     if args.type:
-        if args.type.lower() == 'covaxin':
-            vaccine_type = 'COVAXIN'
-        else:
-            vaccine_type = 'COVIDSHIELD'
+        t = args.type
+        t = t.split(",")
+        vaccine_type = [i.upper().strip() for i in t]
 
     reschedule_id = ''
 
@@ -357,7 +356,7 @@ def main():
         return
 
 
-    cprint("Searching Appointment for date " + date_str + " beneficiaries " + str(beneficiary_ids) + " age " + str(age) + " dose " + str(dose) + " district " + str(district) + " reschedule " + reschedule_id + " pins " + str(preferred_pins) + " restrict_pin " + str(restrict_pin),CYAN)
+    cprint("Searching Appointment for date " + date_str + " beneficiaries " + str(beneficiary_ids) + " age " + str(age) + " dose " + str(dose) + " type " + str(vaccine_type) + " district " + str(district) + " reschedule " + reschedule_id + " pins " + str(preferred_pins) + " restrict_pin " + str(restrict_pin),CYAN)
 
     token = get_token()
 
