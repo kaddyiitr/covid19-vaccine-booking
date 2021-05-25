@@ -94,11 +94,12 @@ def fetch_sessions_of_interest(token, min_age_limit=18, district_id=294,date=Non
             if len(vaccine_type) > 0 and session['vaccine'] not in vaccine_type:
                 continue
 
-            if (session['available_capacity'] > 0 and session['min_age_limit'] == min_age_limit and
-                ((dose == 1 and session['available_capacity_dose1'] > 0) or (dose == 2 and session['available_capacity_dose2'] > 0))
-                ):
+            available_capacity = session['available_capacity_dose1'] if dose == 1 else session['available_capacity_dose2']
+            #print ("available_capacity" + str(available_capacity))
 
-                if len(beneficiary_ids) > session['available_capacity'] or session['available_capacity'] < 2:
+            if (session['min_age_limit'] == min_age_limit and available_capacity > 0):
+
+                if len(beneficiary_ids) > available_capacity or available_capacity < 2:
                     cprint("[TOO FEW SEATS, IGNORE] " + " date " + session['date'] + ", center " + row['name'] + ", total " + str(session['available_capacity']) + ", dose1 " + str(session['available_capacity_dose1']) + ", dose2 " + str(session['available_capacity_dose2']) + ", vaccine " + session['vaccine'],CYAN)
                     continue
 
@@ -127,7 +128,7 @@ def get_beneficiaries(token):
     headers = get_headers(token)
     r=requests.get(url,headers=headers)
     if r.status_code != 200:
-        cprint ("Get beneficiaries failed. Please login again", CYAN)
+        cprint ("Get beneficiaries failed. Invalid or Expired token. Please login again", CYAN)
         exit(1)
         return default_beneficiaries
     return r.json()['beneficiaries']
@@ -419,6 +420,7 @@ def main():
     cprint("Searching Appointment for date " + date_str + " beneficiaries " + str(beneficiary_ids) + " age " + str(age) + " dose " + str(dose) + " type " + str(vaccine_type) + " district " + str(district) + " reschedule " + reschedule_id + " pins " + str(preferred_pins) + " restrict_pin " + str(restrict_pin),CYAN)
 
     token = get_token()
+    get_beneficiaries(token)
 
     useful_sessions = fetch_sessions_of_interest(token, age, district, date_str, vaccine_type, preferred_pins, restrict_pin, dose, beneficiary_ids)
     #pprint.pprint(useful_sessions)
